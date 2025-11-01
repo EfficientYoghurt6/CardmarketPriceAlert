@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Cardmarket Price Alert{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Exports</h2>
+  <p>Download recorded price data captured from the Cardmarket API.</p>
+  <ul class="export-list">
+    {% for export in exports %}
+      <li><a href="{{ url_for('export_csv', product_id=export.stem) }}">{{ export.name }}</a></li>
+    {% else %}
+      <li>No exports available yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+<section class="card">
+  <h2>Quick Links</h2>
+  <ul>
+    <li><a href="{{ url_for('watchlist') }}">Manage watchlist</a></li>
+  </ul>
+</section>
+{% endblock %}
