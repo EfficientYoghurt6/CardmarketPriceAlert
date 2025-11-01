@@ -1,21 +1,121 @@
 {% extends "base.html" %}
 {% block title %}Dashboard | Cardmarket Price Alert{% endblock %}
 {% block content %}
-<section class="card">
-  <h2>Exports</h2>
-  <p>Download recorded price data captured from the Cardmarket API.</p>
-  <ul class="export-list">
-    {% for export in exports %}
-      <li><a href="{{ url_for('export_csv', product_id=export.stem) }}">{{ export.name }}</a></li>
-    {% else %}
-      <li>No exports available yet.</li>
-    {% endfor %}
-  </ul>
+<section class="hero">
+  <div class="hero__content">
+    <p class="eyebrow">Dashboard</p>
+    <h2>Your Cardmarket command center</h2>
+    <p>
+      Keep an eye on price movements, download CSV exports, and jump straight to
+      the products that matter. Everything shown here is populated with
+      development demo data so you can explore the UI without live credentials.
+    </p>
+    <div class="hero__cta">
+      <a class="button" href="{{ url_for('watchlist') }}">Manage watchlist</a>
+      <a class="button button--ghost" href="{{ url_for('watchlist') }}#add">Add another product</a>
+    </div>
+  </div>
+  <div class="hero__stats">
+    <div class="summary-card">
+      <span class="summary-card__label">Tracked products</span>
+      <span class="summary-card__value">{{ summary.total_tracked }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-card__label">Exports available</span>
+      <span class="summary-card__value">{{ summary.exports_available }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-card__label">Latest price capture</span>
+      <span class="summary-card__value">
+        {% if summary.latest_update %}
+          {{ summary.latest_update.strftime('%d %b %Y · %H:%M') }}
+        {% else %}
+          Not yet captured
+        {% endif %}
+      </span>
+    </div>
+  </div>
 </section>
+
 <section class="card">
-  <h2>Quick Links</h2>
-  <ul>
-    <li><a href="{{ url_for('watchlist') }}">Manage watchlist</a></li>
+  <div class="section-header">
+    <div>
+      <h3>Watchlist at a glance</h3>
+      <p class="subtext">An overview of the products currently being monitored.</p>
+    </div>
+    <a class="button button--ghost" href="{{ url_for('watchlist') }}">View all</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Filters</th>
+          <th>Last update</th>
+          <th>Entries</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in watchlist_snapshot %}
+          <tr>
+            <td>
+              <div class="table-title">{{ entry.item.product_name }}</div>
+              <div class="subtext">{{ entry.item.product_id }}</div>
+            </td>
+            <td>
+              <span class="pill">{{ entry.item.filters.language or 'Any language' }}</span>
+              <span class="pill">{{ entry.item.filters.condition or 'Any condition' }}</span>
+              <span class="pill">Min {{ entry.item.filters.min_quantity }}</span>
+            </td>
+            <td>
+              {% if entry.last_updated %}
+                {{ entry.last_updated.strftime('%d %b %Y %H:%M') }}
+              {% else %}
+                <span class="pill pill--muted">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if entry.entry_count %}
+                {{ entry.entry_count }}
+              {% else %}
+                <span class="pill pill--muted">No data</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4">No products tracked yet. Add one from the watchlist page to get started.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="card">
+  <div class="section-header">
+    <div>
+      <h3>Recent exports</h3>
+      <p class="subtext">Download CSV snapshots for deeper analysis.</p>
+    </div>
+  </div>
+  <ul class="exports-list">
+    {% for export in exports %}
+      <li class="exports-list__item">
+        <div>
+          <div class="table-title">{{ export.filename }}</div>
+          <div class="subtext">Updated {{ export.modified.strftime('%d %b %Y %H:%M') }} · {{ export.size_kb }} KB</div>
+        </div>
+        <a class="button" href="{{ url_for('export_csv', product_id=export.id) }}">Download</a>
+      </li>
+    {% else %}
+      <li class="exports-list__item">
+        <div>
+          <div class="table-title">No exports available yet</div>
+          <div class="subtext">Run the pricing scheduler to capture data and generate CSV files.</div>
+        </div>
+      </li>
+    {% endfor %}
   </ul>
 </section>
 {% endblock %}

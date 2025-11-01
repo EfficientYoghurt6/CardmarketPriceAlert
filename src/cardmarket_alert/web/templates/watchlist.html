@@ -1,9 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Watchlist | Cardmarket Price Alert{% endblock %}
 {% block content %}
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Watchlist</p>
+    <h2>Control which listings you monitor</h2>
+    <p class="subtext">
+      Add filters for language, condition, and minimum available quantity. Remove
+      products when you no longer need alerts.
+    </p>
+  </div>
+  <a class="button button--ghost" href="{{ url_for('index') }}">Back to dashboard</a>
+</section>
+
 <section class="layout-grid">
-  <section class="card">
-    <h2>Add product</h2>
+  <section class="card" id="add">
+    <h3>Add a product</h3>
     <form method="post" class="form-grid">
       <label>Product Name<input type="text" name="product_name" placeholder="Blue-Eyes White Dragon" required /></label>
       <label>Product URL<input type="url" name="product_url" placeholder="https://www.cardmarket.com/..." required /></label>
@@ -15,31 +27,71 @@
     </form>
   </section>
   <section class="card">
-    <h2>Tracked products</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Language</th>
-          <th>Condition</th>
-          <th>Min Qty</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in watchlist %}
+    <div class="section-header">
+      <div>
+        <h3>Tracked products</h3>
+        <p class="subtext">Each row summarises the filters and last price snapshot.</p>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
           <tr>
-            <td>{{ item.product_name }}</td>
-            <td>{{ item.filters.language or 'Any' }}</td>
-            <td>{{ item.filters.condition or 'Any' }}</td>
-            <td>{{ item.filters.min_quantity }}</td>
-            <td><a class="button" href="{{ url_for('watchlist_detail', product_id=item.product_id) }}">Details</a></td>
+            <th>Product</th>
+            <th>Filters</th>
+            <th>Last update</th>
+            <th>Entries</th>
+            <th></th>
           </tr>
-        {% else %}
-          <tr><td colspan="5">No products tracked yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for entry in watchlist %}
+            <tr>
+              <td>
+                <div class="table-title">{{ entry.item.product_name }}</div>
+                <div class="subtext">{{ entry.item.product_id }}</div>
+              </td>
+              <td>
+                <span class="pill">{{ entry.item.filters.language or 'Any language' }}</span>
+                <span class="pill">{{ entry.item.filters.condition or 'Any condition' }}</span>
+                <span class="pill">Min {{ entry.item.filters.min_quantity }}</span>
+              </td>
+              <td>
+                {% if entry.last_updated %}
+                  {{ entry.last_updated.strftime('%d %b %Y %H:%M') }}
+                {% else %}
+                  <span class="pill pill--muted">Pending</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if entry.entry_count %}
+                  {{ entry.entry_count }}
+                {% else %}
+                  <span class="pill pill--muted">No data</span>
+                {% endif %}
+              </td>
+              <td class="actions">
+                <a
+                  class="button button--ghost"
+                  href="{{ url_for('watchlist_detail', product_id=entry.item.product_id) }}"
+                >Details</a>
+                <form
+                  method="post"
+                  action="{{ url_for('remove_watch_item', product_id=entry.item.product_id) }}"
+                  class="inline-form"
+                >
+                  <button type="submit" class="button button--danger">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5">No products tracked yet. Use the form on the left to add your first watch item.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 </section>
 {% endblock %}
