@@ -39,6 +39,7 @@
           <tr>
             <th>Product</th>
             <th>Filters</th>
+            <th>Latest price</th>
             <th>Last update</th>
             <th>Entries</th>
             <th></th>
@@ -55,6 +56,13 @@
                 <span class="pill">{{ entry.item.filters.language or 'Any language' }}</span>
                 <span class="pill">{{ entry.item.filters.condition or 'Any condition' }}</span>
                 <span class="pill">Min {{ entry.item.filters.min_quantity }}</span>
+              </td>
+              <td>
+                {% if entry.latest_price is not none %}
+                  {{ "%.2f"|format(entry.latest_price) }} €
+                {% else %}
+                  <span class="pill pill--muted">No data</span>
+                {% endif %}
               </td>
               <td>
                 {% if entry.last_updated %}
@@ -86,7 +94,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="5">No products tracked yet. Use the form on the left to add your first watch item.</td>
+              <td colspan="6">No products tracked yet. Use the form on the left to add your first watch item.</td>
             </tr>
           {% endfor %}
         </tbody>

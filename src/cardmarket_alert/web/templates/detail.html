@@ -54,7 +54,7 @@
             <td>{{ entry.fetched_at.strftime('%d %b %Y %H:%M') }}</td>
             <td>{{ '%.2f' | format(entry.price_eur) }}</td>
             <td>{{ entry.available_quantity }}</td>
-            <td>{{ entry.seller }}</td>
+            <td>{{ entry.seller or '' }}</td>
           </tr>
         {% else %}
           <tr>
