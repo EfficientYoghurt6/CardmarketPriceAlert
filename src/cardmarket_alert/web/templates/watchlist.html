@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Watchlist | Cardmarket Price Alert{% endblock %}
+{% block content %}
+<section class="layout-grid">
+  <section class="card">
+    <h2>Add product</h2>
+    <form method="post" class="form-grid">
+      <label>Product Name<input type="text" name="product_name" placeholder="Blue-Eyes White Dragon" required /></label>
+      <label>Product URL<input type="url" name="product_url" placeholder="https://www.cardmarket.com/..." required /></label>
+      <label>Product ID<input type="text" name="product_id" placeholder="SDK-001" /></label>
+      <label>Language<input type="text" name="language" placeholder="EN" /></label>
+      <label>Condition<input type="text" name="condition" placeholder="Near Mint" /></label>
+      <label>Minimum Quantity<input type="number" name="min_quantity" min="1" value="1" /></label>
+      <button type="submit">Add to watchlist</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Tracked products</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Language</th>
+          <th>Condition</th>
+          <th>Min Qty</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in watchlist %}
+          <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.filters.language or 'Any' }}</td>
+            <td>{{ item.filters.condition or 'Any' }}</td>
+            <td>{{ item.filters.min_quantity }}</td>
+            <td><a class="button" href="{{ url_for('watchlist_detail', product_id=item.product_id) }}">Details</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No products tracked yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</section>
+{% endblock %}
