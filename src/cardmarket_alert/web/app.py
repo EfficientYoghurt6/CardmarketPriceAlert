@@ -22,51 +22,14 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
     app.config["pricing_service"] = pricing_service
     app.config["watchlist_service"] = watchlist_service
 
-    def _build_watchlist_snapshot() -> list[dict[str, Any]]:
-        snapshot: list[dict[str, Any]] = []
-        for watch_item in watchlist_service.all_items():
-            csv_path = pricing_service.repository.file_path_for(watch_item)
-            entry_count = 0
-            if csv_path.exists():
-                with csv_path.open("r", encoding="utf-8") as handle:
-                    # subtract header if present
-                    entry_count = max(sum(1 for _ in handle) - 1, 0)
-            snapshot.append(
-                {
-                    "item": watch_item,
-                    "last_updated": pricing_service.repository.last_updated(watch_item),
-                    "has_history": csv_path.exists(),
-                    "entry_count": entry_count,
-                }
-            )
-        return snapshot
-
-    def _build_export_snapshot() -> list[dict[str, Any]]:
-        exports: list[dict[str, Any]] = []
-        for export_path in pricing_service.repository.list_exports():
-            try:
-                stats = export_path.stat()
-            except FileNotFoundError:
-                continue
-            exports.append(
-                {
-                    "id": export_path.stem,
-                    "filename": export_path.name,
-                    "modified": datetime.fromtimestamp(stats.st_mtime),
-                    "size_kb": round(stats.st_size / 1024, 1),
-                }
-            )
-        exports.sort(key=lambda export: export["modified"], reverse=True)
-        return exports
-
     @app.context_processor
     def inject_globals() -> dict[str, Any]:
         return {"current_year": datetime.now(UTC).year}
 
     @app.route("/")
     def index() -> str:
-        watchlist_snapshot = _build_watchlist_snapshot()
-        exports = _build_export_snapshot()
+        watchlist_snapshot = pricing_service.watchlist_snapshot(watchlist_service.all_items())
+        exports = pricing_service.export_snapshot()
         latest_update = max(
             (entry["last_updated"] for entry in watchlist_snapshot if entry["last_updated"]),
             default=None,
@@ -85,7 +48,7 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
 
     @app.route("/watchlist")
     def watchlist() -> str:
-        watchlist_snapshot = _build_watchlist_snapshot()
+        watchlist_snapshot = pricing_service.watchlist_snapshot(watchlist_service.all_items())
         watchlist_snapshot.sort(key=lambda entry: entry["item"].product_name.lower())
         return render_template("watchlist.html", watchlist=watchlist_snapshot)
 
@@ -95,21 +58,7 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
         if item is None:
             flash("Unknown product", "error")
             return redirect(url_for("watchlist"))
-        csv_path = pricing_service.repository.file_path_for(item)
-        history: list[dict[str, object]] = []
-        if csv_path.exists():
-            with csv_path.open("r", encoding="utf-8") as handle:
-                next(handle)  # skip header
-                for line in handle:
-                    fetched_at, price_eur, available_quantity, seller = line.strip().split(",")
-                    history.append(
-                        {
-                            "fetched_at": datetime.fromisoformat(fetched_at),
-                            "price_eur": float(price_eur),
-                            "available_quantity": int(available_quantity),
-                            "seller": seller,
-                        }
-                    )
+        history = pricing_service.history_for(item)
         return render_template("detail.html", item=item, history=history)
 
     @app.route("/watchlist", methods=["POST"])
@@ -150,8 +99,7 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
         if watch_item is None:
             flash("Unknown product", "error")
             return redirect(url_for("watchlist"))
-        export_path = DEFAULT_CONFIG.data_directory / "exports" / f"{product_id}.csv"
-        pricing_service.repository.export(watch_item, export_path)
+        export_path = pricing_service.export_watch_item(watch_item)
         return send_file(export_path, as_attachment=True)
 
     return app

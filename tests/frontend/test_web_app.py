@@ -75,3 +75,29 @@ def test_add_watch_item_updates_service_state(web_app) -> None:
     new_item = watchlist_service.items["new-card"]
     assert new_item.filters.language == "EN"
     assert new_item.filters.min_quantity == 2
+
+
+def test_watchlist_detail_renders_history(web_app) -> None:
+    app, pricing_service, watchlist_service = web_app
+    watch_item = watchlist_service.items["demo"]
+
+    pricing_service.repository.append_entries(
+        watch_item,
+        [
+            PriceEntry(
+                fetched_at=datetime(2024, 1, 1, 12, 30, tzinfo=UTC),
+                price_eur=24.99,
+                available_quantity=5,
+                seller="Another Seller",
+            )
+        ],
+    )
+
+    client = app.test_client()
+    response = client.get(f"/watchlist/{watch_item.product_id}")
+
+    assert response.status_code == 200
+    assert b"Price history" in response.data
+    assert b"Another Seller" in response.data
+    assert b"24.99" in response.data
+    assert b"No history recorded yet" not in response.data
