@@ -63,6 +63,14 @@ The development bootstrap seeds the UI with a demo Yu-Gi-Oh! product and sample
 price history. This allows the watchlist and detail views to render without live
 API credentials.
 
+### Running Tests
+
+Automated backend and frontend integration tests are powered by `pytest`:
+
+```bash
+pytest
+```
+
 ## Web UI setup & usage
 
 1. **Install dependencies** using the steps in the section above and activate
