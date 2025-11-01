@@ -1,7 +1,7 @@
 """Flask web application serving the user interface."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from flask import Flask, flash, redirect, render_template, request, send_file, url_for
@@ -61,7 +61,7 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
 
     @app.context_processor
     def inject_globals() -> dict[str, Any]:
-        return {"current_year": datetime.utcnow().year}
+        return {"current_year": datetime.now(UTC).year}
 
     @app.route("/")
     def index() -> str:

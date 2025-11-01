@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Iterable
 
 from ..api.client import CardmarketClient
@@ -53,7 +53,7 @@ class PricingService:
     def seed_demo_data(self, watch_item: WatchItem) -> None:
         """Populate demo CSV data for UI development."""
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         entries = [
             PriceEntry(fetched_at=now, price_eur=29.99, available_quantity=3, seller="DemoShop"),
         ]

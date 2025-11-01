@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Iterable
 
 import requests
@@ -58,6 +58,6 @@ class CardmarketClient:
         try:
             response = requests.get(self.api_base_url, timeout=5)
             response.raise_for_status()
-            return {"ok": True, "checked_at": datetime.utcnow()}
+            return {"ok": True, "checked_at": datetime.now(UTC)}
         except requests.RequestException as exc:  # pragma: no cover - placeholder
-            return {"ok": False, "error": str(exc), "checked_at": datetime.utcnow()}
+            return {"ok": False, "error": str(exc), "checked_at": datetime.now(UTC)}
