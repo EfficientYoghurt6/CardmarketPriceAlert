@@ -63,6 +63,25 @@ The development bootstrap seeds the UI with a demo Yu-Gi-Oh! product and sample
 price history. This allows the watchlist and detail views to render without live
 API credentials.
 
+## Web UI setup & usage
+
+1. **Install dependencies** using the steps in the section above and activate
+   your virtual environment.
+2. **Start the Flask server** with either `flask run` or `python -m
+   cardmarket_alert`. The application listens on `http://127.0.0.1:5000/` by
+   default.
+3. **Open the dashboard** in your browser to explore the demo data. The landing
+   page highlights the number of tracked products, recent CSV exports, and links
+   to drill down into each listing.
+4. **Manage the watchlist** from the dedicated page. You can add new products by
+   pasting a Cardmarket URL, and remove them via the inline actions. Demo price
+   history appears on the product detail page so you can see how captured data
+   is presented.
+
+When you're ready to work with live data, update your Cardmarket API
+credentials in `config.py` and run the pricing scheduler to populate the CSV
+repository.
+
 ### Configuration
 
 Runtime settings live in `src/cardmarket_alert/config.py`. Key options include:

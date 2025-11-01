@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
+
 from flask import Flask, flash, redirect, render_template, request, send_file, url_for
 
 from ..config import DEFAULT_CONFIG
@@ -20,15 +22,72 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
     app.config["pricing_service"] = pricing_service
     app.config["watchlist_service"] = watchlist_service
 
+    def _build_watchlist_snapshot() -> list[dict[str, Any]]:
+        snapshot: list[dict[str, Any]] = []
+        for watch_item in watchlist_service.all_items():
+            csv_path = pricing_service.repository.file_path_for(watch_item)
+            entry_count = 0
+            if csv_path.exists():
+                with csv_path.open("r", encoding="utf-8") as handle:
+                    # subtract header if present
+                    entry_count = max(sum(1 for _ in handle) - 1, 0)
+            snapshot.append(
+                {
+                    "item": watch_item,
+                    "last_updated": pricing_service.repository.last_updated(watch_item),
+                    "has_history": csv_path.exists(),
+                    "entry_count": entry_count,
+                }
+            )
+        return snapshot
+
+    def _build_export_snapshot() -> list[dict[str, Any]]:
+        exports: list[dict[str, Any]] = []
+        for export_path in pricing_service.repository.list_exports():
+            try:
+                stats = export_path.stat()
+            except FileNotFoundError:
+                continue
+            exports.append(
+                {
+                    "id": export_path.stem,
+                    "filename": export_path.name,
+                    "modified": datetime.fromtimestamp(stats.st_mtime),
+                    "size_kb": round(stats.st_size / 1024, 1),
+                }
+            )
+        exports.sort(key=lambda export: export["modified"], reverse=True)
+        return exports
+
+    @app.context_processor
+    def inject_globals() -> dict[str, Any]:
+        return {"current_year": datetime.utcnow().year}
+
     @app.route("/")
     def index() -> str:
-        exports = pricing_service.repository.list_exports()
-        return render_template("index.html", exports=exports)
+        watchlist_snapshot = _build_watchlist_snapshot()
+        exports = _build_export_snapshot()
+        latest_update = max(
+            (entry["last_updated"] for entry in watchlist_snapshot if entry["last_updated"]),
+            default=None,
+        )
+        summary = {
+            "total_tracked": len(watchlist_snapshot),
+            "exports_available": len(exports),
+            "latest_update": latest_update,
+        }
+        return render_template(
+            "index.html",
+            summary=summary,
+            watchlist_snapshot=watchlist_snapshot,
+            exports=exports,
+        )
 
     @app.route("/watchlist")
     def watchlist() -> str:
-        items = watchlist_service.all_items()
-        return render_template("watchlist.html", watchlist=items)
+        watchlist_snapshot = _build_watchlist_snapshot()
+        watchlist_snapshot.sort(key=lambda entry: entry["item"].product_name.lower())
+        return render_template("watchlist.html", watchlist=watchlist_snapshot)
 
     @app.route("/watchlist/<product_id>")
     def watchlist_detail(product_id: str) -> str:
@@ -73,6 +132,16 @@ def create_app(pricing_service: PricingService, watchlist_service: WatchlistServ
         )
         watch_item = watchlist_service.add_item(product_id=product_id, product_name=product_name, filters=filters)
         flash(f"Added {watch_item.product_name} to watch list", "success")
+        return redirect(url_for("watchlist"))
+
+    @app.route("/watchlist/<product_id>/remove", methods=["POST"])
+    def remove_watch_item(product_id: str) -> str:
+        item = watchlist_service.items.get(product_id)
+        if item is None:
+            flash("Unknown product", "error")
+        else:
+            watchlist_service.remove_item(product_id)
+            flash(f"Stopped tracking {item.product_name}", "success")
         return redirect(url_for("watchlist"))
 
     @app.route("/exports/<product_id>.csv")

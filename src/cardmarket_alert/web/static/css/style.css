@@ -15,6 +15,10 @@ body {
   color: var(--text-color);
 }
 
+a {
+  color: var(--accent-color);
+}
+
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -46,6 +50,11 @@ main {
   border-radius: 16px;
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.35);
   border: 1px solid var(--border-color);
+}
+
+.card h3,
+.card h2 {
+  margin-top: 0;
 }
 
 .layout-grid {
@@ -85,6 +94,7 @@ button,
   cursor: pointer;
   text-decoration: none;
   text-align: center;
+  border: 1px solid transparent;
 }
 
 button:hover,
@@ -92,17 +102,49 @@ button:hover,
   filter: brightness(1.1);
 }
 
-table {
+.button--ghost {
+  background: transparent;
+  color: var(--accent-color);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.button--ghost:hover {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.button--danger {
+  background: rgba(248, 113, 113, 0.2);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.button--danger:hover {
+  background: rgba(248, 113, 113, 0.3);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-table th,
-table td {
+.data-table th,
+.data-table td {
   padding: 0.75rem;
   border-bottom: 1px solid var(--border-color);
   text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-color);
 }
 
 .flash-list {
@@ -127,10 +169,169 @@ table td {
   color: #f87171;
 }
 
-.detail-grid {
+.hero {
   display: grid;
-  grid-template-columns: 150px 1fr;
-  row-gap: 0.5rem;
+  gap: 2rem;
+  padding: 2.5rem;
+  border-radius: 20px;
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.35), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.hero__content {
+  max-width: 560px;
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.hero__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.summary-card__label {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-color);
+}
+
+.summary-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-color);
+  margin-bottom: 0.5rem;
+}
+
+.page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.subtext {
+  color: var(--muted-color);
+  font-size: 0.95rem;
+}
+
+.table-title {
+  font-weight: 600;
+}
+
+.exports-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.exports-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.5);
+  flex-wrap: wrap;
+}
+
+.exports-list__item .button {
+  min-width: 120px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  margin-right: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.pill--muted {
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--muted-color);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.inline-form {
+  margin: 0;
+}
+
+.inline-form button {
+  padding: 0.5rem 0.75rem;
+}
+
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.meta-label {
+  font-size: 0.8rem;
+  color: var(--muted-color);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.meta-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  main {
+    padding: 1.5rem;
+  }
+
+  .hero {
+    padding: 1.75rem;
+  }
 }
 
 footer {

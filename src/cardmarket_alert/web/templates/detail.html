@@ -1,40 +1,68 @@
 {% extends "base.html" %}
 {% block title %}{{ item.product_name }} | Cardmarket Price Alert{% endblock %}
 {% block content %}
-<section class="card">
-  <h2>{{ item.product_name }}</h2>
-  <p>
-    Tracking listings for <a href="{{ item.filters.product_url }}" target="_blank" rel="noreferrer">{{ item.filters.product_url }}</a>
-  </p>
-  <dl class="detail-grid">
-    <dt>Language</dt><dd>{{ item.filters.language or 'Any' }}</dd>
-    <dt>Condition</dt><dd>{{ item.filters.condition or 'Any' }}</dd>
-    <dt>Min quantity</dt><dd>{{ item.filters.min_quantity }}</dd>
-  </dl>
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Product detail</p>
+    <h2>{{ item.product_name }}</h2>
+    <p class="subtext">
+      Monitoring <a href="{{ item.filters.product_url }}" target="_blank" rel="noreferrer">{{ item.filters.product_url }}</a>
+      with the filters below. CSV exports will surface in the dashboard once the
+      scheduler captures data.
+    </p>
+  </div>
+  <a class="button button--ghost" href="{{ url_for('watchlist') }}">Back to watchlist</a>
 </section>
+
 <section class="card">
-  <h3>Price history</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Fetched at</th>
-        <th>Price (€)</th>
-        <th>Available quantity</th>
-        <th>Seller</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in history %}
+  <div class="meta-grid">
+    <div>
+      <span class="meta-label">Language</span>
+      <span class="meta-value">{{ item.filters.language or 'Any language' }}</span>
+    </div>
+    <div>
+      <span class="meta-label">Condition</span>
+      <span class="meta-value">{{ item.filters.condition or 'Any condition' }}</span>
+    </div>
+    <div>
+      <span class="meta-label">Minimum quantity</span>
+      <span class="meta-value">{{ item.filters.min_quantity }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="section-header">
+    <div>
+      <h3>Price history</h3>
+      <p class="subtext">Latest entries from the CSV repository.</p>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
         <tr>
-          <td>{{ entry.fetched_at }}</td>
-          <td>{{ entry.price_eur }}</td>
-          <td>{{ entry.available_quantity }}</td>
-          <td>{{ entry.seller }}</td>
+          <th>Fetched at</th>
+          <th>Price (€)</th>
+          <th>Available quantity</th>
+          <th>Seller</th>
         </tr>
-      {% else %}
-        <tr><td colspan="4">No history recorded yet.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for entry in history %}
+          <tr>
+            <td>{{ entry.fetched_at.strftime('%d %b %Y %H:%M') }}</td>
+            <td>{{ '%.2f' | format(entry.price_eur) }}</td>
+            <td>{{ entry.available_quantity }}</td>
+            <td>{{ entry.seller }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4">No history recorded yet. Once data is captured it will appear here automatically.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
 {% endblock %}
